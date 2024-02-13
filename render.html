@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ringe des Saturns</title>
+</head>
+<body>
+    <img id="saturnRings" src="" alt="Ringe des Saturns">
+
+    <script>
+        // Funktion, um die inscribed Daten abzurufen und im <img> Tag anzuzeigen
+        async function fetchAndDisplayRings() {
+            const inscribedDataUrl = 'URL_ZU_DEN_INSCRIBED_DATEN';
+            // Abrufen der inscribed Daten
+            const response = await fetch(inscribedDataUrl);
+            const imageData = await response.blob();
+            // Anzeige der Daten
+            document.getElementById('saturnRings').src = URL.createObjectURL(imageData);
+        }
+
+        fetchAndDisplayRings();
+    </script>
+</body>
+</html>

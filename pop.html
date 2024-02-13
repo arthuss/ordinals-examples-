@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+    </style>
+    <title>Pixelart Schwarzes Loch mit Runen und Popup-Effekten</title>
+</head>
+<body>
+    <canvas id="glcanvas"></canvas>
+    <script>
+        var canvas = document.getElementById('glcanvas');
+        var ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        var centerX = canvas.width / 2;
+        var centerY = canvas.height / 2;
+        var particles = []; // Array zur Speicherung der Partikel
+        var particleCount = 1000; // Anzahl der Partikel
+        var blackHoleSize = 100; // Größe des schwarzen Lochs
+
+        // Funktion zum Erstellen eines zufälligen Partikels
+        function createParticle() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: 0,
+                vy: 0
+            };
+        }
+
+        // Partikel erstellen
+        for (var i = 0; i < particleCount; i++) {
+            particles.push(createParticle());
+        }
+
+        // Funktion zum Zeichnen eines schwarzen Lochs im Pixelstil
+        function drawBlackHole() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(centerX - blackHoleSize / 2, centerY - blackHoleSize / 2, blackHoleSize, blackHoleSize);
+        }
+
+        // Funktion zum Bewegen der Partikel in Richtung des schwarzen Lochs
+        function moveParticles() {
+            particles.forEach(function(particle) {
+                // Vektor zum schwarzen Loch berechnen
+                var dx = centerX - particle.x;
+                var dy = centerY - particle.y;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+
+                // Geschwindigkeit proportional zur Entfernung vom schwarzen Loch setzen
+                particle.vx = (dx / distance) * 2;
+                particle.vy = (dy / distance) * 2;
+
+                // Partikel bewegen
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+
+                // Überprüfen, ob der Partikel das schwarze Loch erreicht hat, und ihn zurücksetzen
+                if (distance < blackHoleSize / 2) {
+                    particle.x = Math.random() * canvas.width;
+                    particle.y = Math.random() * canvas.height;
+                }
+            });
+        }
+
+        // Funktion zum Zeichnen der Partikel im Pixelstil
+        function drawParticles() {
+            particles.forEach(function(particle) {
+                ctx.fillStyle = 'white';
+                ctx.fillRect(particle.x, particle.y, 1, 1);
+            });
+        }
+
+        // Funktion zum Erstellen eines Popup-Effekts
+        function createPopup() {
+            var x = Math.random() * canvas.width;
+            var y = Math.random() * canvas.height;
+            var size = Math.random() * 5 + 2;
+            var duration = Math.random() * 500 + 500;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.fillRect(x, y, size, size);
+
+            setTimeout(function() {
+                ctx.clearRect(x, y, size, size);
+            }, duration);
+        }
+
+        // Funktion zum Zeichnen von Runen im Pixelstil
+        function drawRunes() {
+            ctx.fillStyle = 'white';
+            ctx.font = '20px Arial';
+            ctx.fillText('ᚠ', centerX - 30, centerY - 30);
+            ctx.fillText('ᚢ', centerX - 10, centerY - 30);
+            ctx.fillText('ᚦ', centerX + 10, centerY - 30);
+            ctx.fillText('ᚬ', centerX + 30, centerY - 30);
+        }
+
+        // Hauptanimationsfunktion
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawBlackHole();
+            moveParticles();
+            drawParticles();
+            createPopup();
+            drawRunes();
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

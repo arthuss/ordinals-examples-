@@ -1,0 +1,153 @@
+<html>
+<script type="text/javascript">
+
+var GL;
+var shaderId;
+var vertexBuffer;
+var indexBuffer;
+var timer = 0;
+var mouseX = 0.5;
+var mouseY = 0.5;
+
+function initWebGL() {
+    var canvas = document.getElementById("glcanvas");
+    GL = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+    if (!GL) {
+        alert("Unable to initialize WebGL. Your browser may not support it.");
+        return;
+    }
+    GL.clearColor(0.0, 0.0, 0.0, 1.0);
+    GL.clear(GL.COLOR_BUFFER_BIT);
+
+    canvas.addEventListener('mousemove', function(event) {
+        var rect = canvas.getBoundingClientRect();
+        mouseX = (event.clientX - rect.left) / canvas.width;
+        mouseY = 1.0 - (event.clientY - rect.top) / canvas.height;
+    });
+
+    initShaderProgram();
+    initBuffers();
+    animationLoop();
+}
+
+function initShaderProgram() {
+    shaderId = GL.createProgram();
+    var vertId = GL.createShader(GL.VERTEX_SHADER);
+    var fragId = GL.createShader(GL.FRAGMENT_SHADER);
+    var vert = document.getElementById("vertScript").text;
+    var frag = document.getElementById("fragScript").text;
+
+    GL.shaderSource(vertId, vert);
+    GL.shaderSource(fragId, frag);
+    GL.compileShader(vertId);
+    GL.compileShader(fragId);
+
+    if (!GL.getShaderParameter(vertId, GL.COMPILE_STATUS)) {
+        alert("Vertex Shader Compiler Error: " + GL.getShaderInfoLog(vertId));
+        return;
+    }
+
+    if (!GL.getShaderParameter(fragId, GL.COMPILE_STATUS)) {
+        alert("Fragment Shader Compiler Error: " + GL.getShaderInfoLog(fragId));
+        return;
+    }
+
+    GL.attachShader(shaderId, vertId);
+    GL.attachShader(shaderId, fragId);
+    GL.linkProgram(shaderId);
+
+    if (!GL.getProgramParameter(shaderId, GL.LINK_STATUS)) {
+        alert("Shader Linking Error: " + GL.getProgramInfoLog(shaderId));
+        return;
+    }
+}
+
+function initBuffers() {
+    var vertices = new Float32Array([
+        -1.0, -1.0, 0.0,
+        -1.0,  1.0, 0.0,
+         1.0,  1.0, 0.0,
+         1.0, -1.0, 0.0
+    ]);
+
+    vertexBuffer = GL.createBuffer();
+    GL.bindBuffer(GL.ARRAY_BUFFER, vertexBuffer);
+    GL.bufferData(GL.ARRAY_BUFFER, vertices, GL.STATIC_DRAW);
+
+    var indices = new Uint16Array([0, 1, 2, 0, 2, 3]);
+    indexBuffer = GL.createBuffer();
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    GL.bufferData(GL.ELEMENT_ARRAY_BUFFER, indices, GL.STATIC_DRAW);
+}
+
+window.requestAnimationFrame = (function() {
+    return window.requestAnimationFrame ||
+           window.webkitRequestAnimationFrame ||
+           window.mozRequestAnimationFrame ||
+           window.oRequestAnimationFrame ||
+           window.msRequestAnimationFrame ||
+           function(callback) {
+               window.setTimeout(callback, 1000 / 60);
+           };
+})();
+
+function animationLoop() {
+    requestAnimationFrame(animationLoop);
+    render();
+}
+
+function render() {
+    timer += 0.01;
+    GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+
+    GL.useProgram(shaderId);
+    GL.uniform1f(GL.getUniformLocation(shaderId, "uTime"), timer);
+    GL.uniform2f(GL.getUniformLocation(shaderId, "uMouse"), mouseX, mouseY);
+
+    GL.bindBuffer(GL.ARRAY_BUFFER, vertexBuffer);
+    GL.vertexAttribPointer(GL.getAttribLocation(shaderId, "aVertexPosition"), 3, GL.FLOAT, false, 0, 0);
+    GL.enableVertexAttribArray(GL.getAttribLocation(shaderId, "aVertexPosition"));
+
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, indexBuffer);
+    GL.drawElements(GL.TRIANGLES, 6, GL.UNSIGNED_SHORT, 0);
+}
+
+</script>
+
+<script id="vertScript" type="x-shader/x-vertex">
+attribute vec3 aVertexPosition;
+
+void main(void) {
+    gl_Position = vec4(aVertexPosition, 1.0);
+}
+</script>
+
+<script id="fragScript" type="x-shader/x-fragment">
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform float uTime;
+uniform vec2 uMouse;
+
+void main(void) {
+    vec2 uv = gl_FragCoord.xy / vec2(640.0, 480.0);
+    uv = uv * 2.0 - 1.0; // Transformieren von 0->1 zu -1->1
+
+    // Einfache Wellenfunktion
+    float wave = sin(uv.x * 10.0 + uTime) * cos(uv.y * 10.0 + uTime) * 0.025;
+
+    // Farbgradient für "Wassertiefe"
+    float depth = smoothstep(-1.0, 1.0, uv.y + wave);
+
+    // Welleneffekt basierend auf der Zeit und der Position
+    vec3 color = mix(vec3(0.0, 0.3, 0.6), vec3(0.0, 0.5, 0.8), depth + wave);
+
+    gl_FragColor = vec4(color, 1.0);
+}
+</script>
+
+<body onload="initWebGL()">
+<canvas id="glcanvas" width="640" height="480"></canvas>
+</body>
+</html>

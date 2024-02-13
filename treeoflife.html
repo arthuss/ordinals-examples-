@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tree of Life with Runes</title>
+<style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        background-color: black;
+    }
+    .rune {
+        position: absolute;
+        color: red;
+        cursor: pointer;
+        user-select: none;
+    }
+    @keyframes fall {
+        to { transform: translateY(100vh); }
+    }
+    @keyframes wave {
+        0% { background-position: 0 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0 50%; }
+    }
+</style>
+</head>
+<body>
+
+<!-- Runen könnten hier als einzelne Elemente eingefügt werden -->
+<div class="rune" style="top: 50px; left: 100px;">ᚠ</div>
+<div class="rune" style="top: 80px; left: 150px;">ᚢ</div>
+<!-- Weitere Runen... -->
+
+<script>
+    document.querySelectorAll('.rune').forEach(rune => {
+        rune.addEventListener('mouseenter', () => {
+            rune.style.animation = 'fall 1s forwards';
+
+            // Hintergrundanimation starten
+            document.body.style.background = 'linear-gradient(45deg, #ff0000 25%, #000000 25%, #000000 50%, #ff0000 50%, #ff0000 75%, #000000 75%, #000000 100%)';
+            document.body.style.backgroundSize = '56.57px 56.57px';
+            document.body.style.animation = 'wave 3s infinite linear';
+        });
+    });
+</script>
+
+</body>
+</html>

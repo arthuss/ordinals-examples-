@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blume des Lebens - Interaktion</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        canvas { border: 1px solid black; }
+    </style>
+</head>
+<body>
+    <script>
+        let blumeDesLebens;
+
+        function setup() {
+            createCanvas(600, 600);
+            blumeDesLebens = new BlumeDesLebens(width / 2, height / 2, 6, 80); // Mittelpunkt, Generationen, Radius
+        }
+
+        function draw() {
+            background(255);
+            blumeDesLebens.zeichnen();
+        }
+
+        function mouseMoved() {
+            blumeDesLebens.unordnungEinfuehren();
+        }
+
+        class BlumeDesLebens {
+            constructor(x, y, generationen, radius) {
+                this.x = x;
+                this.y = y;
+                this.generationen = generationen;
+                this.radius = radius;
+                this.kreise = [];
+                this.init();
+            }
+
+            init() {
+                for (let i = 0; i < this.generationen; i++) {
+                    let r = this.radius * sqrt(i + 1);
+                    for (let j = 0; j < i * 6; j++) {
+                        let winkel = TWO_PI / (i * 6) * j;
+                        let x = this.x + cos(winkel) * r;
+                        let y = this.y + sin(winkel) * r;
+                        this.kreise.push(new Kreis(x, y, this.radius));
+                    }
+                }
+            }
+
+            zeichnen() {
+                this.kreise.forEach(kreis => kreis.zeichnen());
+            }
+
+            unordnungEinfuehren() {
+                this.kreise.forEach(kreis => kreis.bewegen());
+            }
+        }
+
+        class Kreis {
+            constructor(x, y, radius) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+            }
+
+            zeichnen() {
+                ellipse(this.x, this.y, this.radius * 2);
+            }
+
+            bewegen() {
+                this.x += random(-2, 2);
+                this.y += random(-2, 2);
+            }
+        }
+    </script>
+</body>
+</html>

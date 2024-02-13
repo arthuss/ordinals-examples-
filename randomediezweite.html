@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
+</head>
+<body>
+<canvas id="glcanvas"></canvas>
+<script type="text/javascript">
+    var canvas = document.getElementById('glcanvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+    var baseRadius = 30 + Math.random() * 70; // Random base radius between 30 and 100
+
+    var runes = ['◆', '▲', '■', '●']; // Beispiel Runen
+    var circles = [];
+
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    function drawCircle(x, y, radius, color, alpha = 1) {
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+
+    function drawRune(x, y, rune) {
+        ctx.fillStyle = 'white';
+        ctx.font = '20px Arial';
+        ctx.fillText(rune, x, y);
+    }
+
+    function addCircles(centerX, centerY, radius) {
+        var numCircles = 6; // Anzahl der Kreise
+        var angle = 2 * Math.PI / numCircles;
+
+        for (var i = 0; i < numCircles; i++) {
+            var x = centerX + radius * Math.cos(i * angle);
+            var y = centerY + radius * Math.sin(i * angle);
+
+            var runeIndex = Math.floor(Math.random() * runes.length);
+            circles.push({ x: x, y: y, color: getRandomColor(), rune: runes[runeIndex] });
+        }
+    }
+
+    canvas.addEventListener('mousemove', function(event) {
+        var rect = canvas.getBoundingClientRect();
+        var mouseX = event.clientX - rect.left;
+        var mouseY = event.clientY - rect.top;
+
+        circles.forEach(function(circle) {
+            var distance = Math.sqrt((circle.x - mouseX) ** 2 + (circle.y - mouseY) ** 2);
+            if (distance < baseRadius) {
+                circle.color = getRandomColor(); // Ändere die Farbe
+                var newRuneIndex = Math.floor(Math.random() * runes.length);
+                circle.rune = runes[newRuneIndex]; // Ändere die Rune
+            }
+        });
+    });
+
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+        circles.forEach(function(circle) {
+            drawCircle(circle.x, circle.y, baseRadius, circle.color);
+            drawRune(circle.x - baseRadius / 4, circle.y + baseRadius / 4, circle.rune);
+        });
+
+        requestAnimationFrame(render);
+    }
+
+    addCircles(centerX, centerY, baseRadius * 2);
+    render();
+</script>
+</body>
+</html>

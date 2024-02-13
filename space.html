@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
+    <title>Sci-Fi Weltraum</title>
+</head>
+<body>
+    <canvas id="glcanvas"></canvas>
+    <script>
+        var canvas = document.getElementById('glcanvas');
+        var ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        var centerX = canvas.width / 2;
+        var centerY = canvas.height / 2;
+        var maxShapes = 300; // Maximale Anzahl von Formen
+        var shapes = []; // Speichert alle Formen und ihren Status
+
+        function drawShape(shape) {
+            ctx.fillStyle = shape.color;
+            ctx.beginPath();
+            if (shape.type === 'circle') {
+                ctx.arc(shape.x, shape.y, shape.size, 0, 2 * Math.PI);
+            } else if (shape.type === 'asteroid') {
+                ctx.moveTo(shape.x, shape.y - shape.size);
+                ctx.lineTo(shape.x + shape.size / 2, shape.y + shape.size);
+                ctx.lineTo(shape.x - shape.size / 2, shape.y + shape.size);
+                ctx.lineTo(shape.x, shape.y - shape.size);
+            } else if (shape.type === 'planet') {
+                ctx.arc(shape.x, shape.y, shape.size, 0, 2 * Math.PI);
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.stroke();
+            } else if (shape.type === 'ring') {
+                ctx.beginPath();
+                ctx.ellipse(shape.x, shape.y, shape.size * 2, shape.size / 4, Math.PI / 2, 0, 2 * Math.PI);
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.stroke();
+            }
+            ctx.fill();
+        }
+
+        function addShape() {
+            // Zufällige Auswahl einer Form
+            var type = Math.random() < 0.6 ? 'circle' : (Math.random() < 0.8 ? 'asteroid' : (Math.random() < 0.9 ? 'planet' : 'ring'));
+            var x = Math.random() * canvas.width;
+            var y = Math.random() * canvas.height;
+            var size = Math.random() * 20 + 5;
+            var color = getRandomColor();
+            var shape;
+            if (type === 'planet') {
+                size *= 2;
+                color = 'rgba(255,255,255,0.3)';
+            } else if (type === 'ring') {
+                size *= 10;
+            }
+            shape = { type: type, x: x, y: y, size: size, color: color };
+            shapes.push(shape);
+        }
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function updateShapes() {
+            shapes.forEach(shape => {
+                if (shape.type !== 'planet' && shape.type !== 'ring') {
+                    shape.x += Math.random() * 4 - 2;
+                    shape.y += Math.random() * 4 - 2;
+                }
+            });
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updateShapes();
+            shapes.forEach(drawShape);
+            requestAnimationFrame(render);
+        }
+
+        // Erstelle den initialen Satz von Formen
+        for (let i = 0; i < maxShapes; i++) {
+            addShape();
+        }
+
+        function animate() {
+            render();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

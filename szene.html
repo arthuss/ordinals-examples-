@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
+</head>
+<body>
+<canvas id="glcanvas"></canvas>
+<script type="text/javascript">
+    var canvas = document.getElementById('glcanvas');
+    var ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Beispiel für Szenenkonfigurationen
+    var scenes = [
+        // Szene 1
+       function createRuneScene(canvasId) {
+    var canvas = document.getElementById(canvasId);
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+    var baseRadius = 50; // Basisradius für den zentralen Kreis
+    var generations = 3; // Anzahl der Generationen von Kreisen
+
+    var circles = []; // Speichert alle Kreise
+    var labels = []; // Speichert die Bezeichnungen für jeden Kreis
+
+    var runes = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᚺ', 'ᚻ', 'ᚼ']; // Beispielsweise Runen
+
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    function drawCircle(x, y, radius, color, alpha = 1) {
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+
+    function drawLabel(x, y, text, alpha = 1) {
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = 'white';
+        ctx.font = '14px Arial';
+        ctx.fillText(text, x, y);
+    }
+
+    function addCircles(centerX, centerY, radius, generations, prefix = '') {
+        var numCircles = 6;
+        var angle = Math.PI / 3; // 60 Grad für hexagonale Anordnung
+
+        for (var g = 0; g < generations; g++) {
+            for (var i = 0; i < numCircles; i++) {
+                var x = centerX + radius * Math.cos(i * angle + g * Math.PI / 6);
+                var y = centerY + radius * Math.sin(i * angle + g * Math.PI / 6);
+
+                if (!circles.some(circle => Math.abs(circle.x - x) < 1 && Math.abs(circle.y - y) < 1)) {
+                    var currentLabel = runes[circles.length % runes.length];
+                    circles.push({ x: x, y: y, color: getRandomColor(), alpha: 0, label: currentLabel });
+                    labels.push({ x: x, y: y, text: currentLabel, alpha: 0 });
+                }
+
+                if (g < generations - 1) {
+                    addCircles(x, y, radius / 2, 1, currentLabel);
+                }
+            }
+        }
+    }
+
+    function updateElementAlphaAndColor(mouseX, mouseY) {
+        circles.forEach(circle => {
+            var distance = Math.sqrt((circle.x - mouseX) ** 2 + (circle.y - mouseY) ** 2);
+            if (distance < baseRadius * 2) {
+                circle.alpha = 1;
+                circle.color = getRandomColor(); // Farbe ändern, wenn die Maus nahe ist
+                labels.find(label => label.x === circle.x && label.y === circle.y).alpha = 1; // Runen-Label sichtbar machen
+            } else {
+                circle.alpha = 0;
+                labels.find(label => label.x === circle.x && label.y === circle.y).alpha = 0; // Runen-Label ausblenden
+            }
+        });
+    }
+
+    canvas.addEventListener('mousemove', function(event) {
+        var rect = canvas.getBoundingClientRect();
+        var mouseX = event.clientX - rect.left;
+        var mouseY = event.clientY - rect.top;
+        updateElementAlphaAndColor(mouseX, mouseY);
+    });
+
+    function render() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        circles.forEach(circle => {
+            drawCircle(circle.x, circle.y, baseRadius, circle.color, circle.alpha);
+        });
+
+        labels.forEach(label => {
+            drawLabel(label.x, label.y, label.text, label.alpha);
+        });
+
+        requestAnimationFrame(render);
+    }
+
+    addCircles(centerX, centerY, baseRadius, generations);
+    render();
+}
+
+        // Szene 2
+        function() {
+            // Initialisiere und render Szene 2
+        },
+        // Füge weitere Szenen hinzu...
+    ];
+
+    function chooseRandomScene() {
+        var randomIndex = Math.floor(Math.random() * scenes.length);
+        var selectedScene = scenes[randomIndex];
+
+        // Setze die vorherige Szene zurück oder bereinige den Canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Initialisiere und starte die ausgewählte Szene
+        selectedScene();
+    }
+
+    // Füge Event-Listener hinzu, um bei Hover eine zufällige Szene zu wählen
+    document.addEventListener('mouseenter', chooseRandomScene);
+
+    // Starte mit einer zufälligen Szene
+    chooseRandomScene();
+</script>
+</body>
+</html>

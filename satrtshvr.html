@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+        .rune {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 60px; /* Größere Schriftgröße */
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .rune:hover {
+            opacity: 1;
+        }
+    </style>
+    <title>Pixelart Schwarzes Loch mit Runen und Popup-Effekten</title>
+</head>
+<body>
+    <canvas id="glcanvas"></canvas>
+    <div class="rune" id="rune">ᚠ</div>
+    <script>
+        var canvas = document.getElementById('glcanvas');
+        var ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        var centerX = canvas.width / 2;
+        var centerY = canvas.height / 2;
+        var particles = []; // Array zur Speicherung der Partikel
+        var particleCount = 1000; // Anzahl der Partikel
+        var blackHoleSize = 100; // Größe des schwarzen Lochs
+
+        // Standard-Runenalphabet
+        var runes = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚬ']; // Fügen Sie hier weitere Runen hinzu, falls gewünscht
+
+        // Funktion zum Erstellen eines zufälligen Partikels
+        function createParticle(x, y, color) {
+            return {
+                x: x,
+                y: y,
+                vx: 0,
+                vy: 0,
+                color: color
+            };
+        }
+
+        // Funktion zum Zeichnen eines schwarzen Lochs im Pixelstil
+        function drawBlackHole() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(centerX - blackHoleSize / 2, centerY - blackHoleSize / 2, blackHoleSize, blackHoleSize);
+        }
+
+        // Funktion zum Bewegen der Partikel in Richtung des schwarzen Lochs
+        function moveParticles() {
+            particles.forEach(function(particle) {
+                // Vektor zum schwarzen Loch berechnen
+                var dx = centerX - particle.x;
+                var dy = centerY - particle.y;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+
+                // Geschwindigkeit proportional zur Entfernung vom schwarzen Loch setzen
+                particle.vx = (dx / distance) * 2;
+                particle.vy = (dy / distance) * 2;
+
+                // Partikel bewegen
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+
+                // Überprüfen, ob der Partikel das schwarze Loch erreicht hat, und ihn zurücksetzen
+                if (distance < blackHoleSize / 2) {
+                    particle.x = Math.random() * canvas.width;
+                    particle.y = Math.random() * canvas.height;
+                }
+            });
+        }
+
+        // Funktion zum Zeichnen der Partikel im Pixelstil
+        function drawParticles() {
+            particles.forEach(function(particle) {
+                ctx.fillStyle = particle.color;
+                ctx.fillRect(particle.x, particle.y, 1, 1);
+            });
+        }
+
+        // Funktion zum Aktualisieren der Rune
+        function updateRune() {
+            var runeIndex = Math.floor(Math.random() * runes.length);
+            document.getElementById('rune').innerHTML = runes[runeIndex];
+        }
+
+        // Funktion zum Hinzufügen von Partikeln an die Mausposition
+        function addParticles(x, y) {
+            for (var i = 0; i < 10; i++) { // Anzahl der hinzuzufügenden Partikel
+                var color = getRandomColor();
+                particles.push(createParticle(x, y, color));
+            }
+        }
+
+        // Funktion zum Erstellen einer zufälligen Farbe
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // Event-Listener für Mausbewegungen
+        canvas.addEventListener('mousemove', function(event) {
+            var rect = canvas.getBoundingClientRect();
+            var mouseX = event.clientX - rect.left;
+            var mouseY = event.clientY - rect.top;
+            addParticles(mouseX, mouseY);
+        });
+
+        // Hauptanimationsfunktion
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawBlackHole();
+            moveParticles();
+            drawParticles();
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+        updateRune(); // Rune beim Laden der Seite aktualisieren
+    </script>
+</body>
+</html>

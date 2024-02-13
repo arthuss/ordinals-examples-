@@ -1,0 +1,88 @@
+<html>
+<head>
+    <style>
+        body { margin: 0; }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
+</head>
+<body>
+<canvas id="glcanvas"></canvas>
+<script type="text/javascript">
+    var canvas = document.getElementById('glcanvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+    var radius = 50; // Konstanter Radius für alle Kreise
+
+    var circles = []; // Speichert alle Kreise und ihren Status
+    var cubeAlpha = 0; // Transparenz des Würfels
+    var fading = ''; // 'in' für Einblenden, 'out' für Ausblenden
+
+    function drawCircle(circle) {
+        ctx.globalAlpha = circle.alpha;
+        ctx.strokeStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, radius, 0, 2 * Math.PI);
+        ctx.stroke();
+    }
+
+    function drawCube() {
+        ctx.globalAlpha = cubeAlpha;
+        ctx.strokeStyle = 'white';
+        ctx.beginPath();
+
+        // Eckpunkte des Würfels definieren (vereinfacht und schematisch)
+        var points = [
+            { x: centerX - radius, y: centerY - radius }, // Oben Links
+            { x: centerX + radius, y: centerY - radius }, // Oben Rechts
+            { x: centerX + radius, y: centerY + radius }, // Unten Rechts
+            { x: centerX - radius, y: centerY + radius }, // Unten Links
+            // Die nächsten 4 Punkte wären für die hintere Fläche des Würfels
+            // Hier ausgelassen für eine vereinfachte Darstellung
+        ];
+
+        // Zeichne die vordere Fläche des Würfels
+        ctx.moveTo(points[0].x, points[0].y);
+        for (var i = 1; i <= points.length; i++) {
+            ctx.lineTo(points[i % points.length].x, points[i % points.length].y);
+        }
+
+        // Hier können weitere Linien hinzugefügt werden, um die 3D-Struktur zu vervollständigen
+
+        ctx.stroke();
+        ctx.globalAlpha = 1; // Setze die Transparenz zurück
+    }
+
+    function updateCubeAlpha(mouseX, mouseY) {
+        var distanceToCenter = Math.sqrt((mouseX - centerX) ** 2 + (mouseY - centerY) ** 2);
+        if (distanceToCenter < radius * 4) { // Erhöhe die Reichweite für den Würfel
+            if (cubeAlpha < 1) cubeAlpha += 0.05; // Einblenden
+        } else {
+            if (cubeAlpha > 0) cubeAlpha -= 0.02; // Ausblenden
+        }
+    }
+
+    canvas.addEventListener('mousemove', function(event) {
+        var rect = canvas.getBoundingClientRect();
+        var mouseX = event.clientX - rect.left;
+        var mouseY = event.clientY - rect.top;
+
+        updateCubeAlpha(mouseX, mouseY);
+    });
+
+    function render() {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        circles.forEach(drawCircle);
+        drawCube(); // Würfel zeichnen
+        requestAnimationFrame(render);
+    }
+
+    render();
+</script>
+</body>
+</html>

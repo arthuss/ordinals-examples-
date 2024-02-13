@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
+    <title>Cyberpunk Psychedelic Muster</title>
+</head>
+<body>
+    <canvas id="glcanvas"></canvas>
+    <script>
+        var canvas = document.getElementById('glcanvas');
+        var ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        var centerX = canvas.width / 2;
+        var centerY = canvas.height / 2;
+        var maxShapes = 200; // Maximale Anzahl von Formen
+        var shapes = []; // Speichert alle Formen und ihren Status
+
+        function drawShape(shape) {
+            ctx.fillStyle = shape.color;
+            ctx.beginPath();
+            if (shape.type === 'circle') {
+                ctx.arc(shape.x, shape.y, shape.size, 0, 2 * Math.PI);
+            } else if (shape.type === 'square') {
+                ctx.rect(shape.x - shape.size / 2, shape.y - shape.size / 2, shape.size, shape.size);
+            } else if (shape.type === 'line') {
+                ctx.moveTo(shape.x1, shape.y1);
+                ctx.lineTo(shape.x2, shape.y2);
+                ctx.lineWidth = shape.width;
+                ctx.strokeStyle = shape.color;
+                ctx.stroke();
+            }
+            ctx.fill();
+        }
+
+        function addShape() {
+            // Zufällige Auswahl einer Form
+            var type = Math.random() < 0.7 ? 'circle' : 'square';
+            if (Math.random() < 0.1) {
+                type = 'line'; // Linien mit geringerer Wahrscheinlichkeit hinzufügen
+            }
+            var x = Math.random() * canvas.width;
+            var y = Math.random() * canvas.height;
+            var size = Math.random() * 50 + 5;
+            var color = getRandomColor();
+            var shape;
+            if (type === 'line') {
+                var x1 = Math.random() * canvas.width;
+                var y1 = Math.random() * canvas.height;
+                var x2 = Math.random() * canvas.width;
+                var y2 = Math.random() * canvas.height;
+                shape = { type: type, x1: x1, y1: y1, x2: x2, y2: y2, width: Math.random() * 5 + 1, color: color };
+            } else {
+                shape = { type: type, x: x, y: y, size: size, color: color };
+            }
+            shapes.push(shape);
+        }
+
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        function updateShapes() {
+            shapes.forEach(shape => {
+                if (shape.type !== 'line') {
+                    shape.x += Math.random() * 4 - 2;
+                    shape.y += Math.random() * 4 - 2;
+                }
+            });
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updateShapes();
+            shapes.forEach(drawShape);
+            requestAnimationFrame(render);
+        }
+
+        // Hintergrundeffekt: Farbverlauf von Dunkel zu Hell
+        var bgBrightness = 0;
+        var bgSpeed = 0.01;
+
+        function updateBackground() {
+            ctx.fillStyle = `rgba(0, 0, 0, ${bgBrightness})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            bgBrightness += bgSpeed;
+            if (bgBrightness > 0.5 || bgBrightness < 0) {
+                bgSpeed = -bgSpeed; // Umkehrung der Richtung bei Erreichen der Grenzwerte
+            }
+        }
+
+        function flashBackground() {
+            ctx.fillStyle = '#fff'; // Blitzlichteffekt: Hintergrund weiß färben
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            setTimeout(() => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height); // Blitzlichteffekt zurücksetzen
+            }, 50);
+        }
+
+        // Erstelle den initialen Satz von Formen
+        for (let i = 0; i < maxShapes; i++) {
+            addShape();
+        }
+
+        function animate() {
+            updateBackground();
+            render();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Blitzlichteffekt bei Mausklick
+        canvas.addEventListener('click', () => {
+            flashBackground();
+        });
+    </script>
+</body>
+</html>

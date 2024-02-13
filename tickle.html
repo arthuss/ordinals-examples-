@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
+    <title>Saturn mit ovalen Ringen</title>
+</head>
+<body>
+    <canvas id="glcanvas"></canvas>
+    <script>
+        var canvas = document.getElementById('glcanvas');
+        var ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        var centerX = canvas.width / 2;
+        var centerY = canvas.height / 2;
+        var saturnRadius = 80; // Radius des Saturn
+        var ringRadiusX = 200; // X-Radius der Ringe
+        var ringRadiusY = 180; // Y-Radius der Ringe
+
+        var particles = []; // Array zur Speicherung der Partikel
+        var ringParticles = []; // Array zur Speicherung der Ringpartikel
+        var numParticles = 500; // Anzahl der Partikel
+        var particleSpeed = 1; // Geschwindigkeit der Partikel
+        var particleSizeRange = [1, 4]; // Bereich der Partikelgröße
+        var maxSplit = 5; // Maximale Anzahl von Teilen bei einer Kollision
+        var numRingParticles = 360; // Anzahl der Partikel pro Ringebene
+
+        var isMouseDown = false; // Variable zum Verfolgen, ob die Maustaste gedrückt ist
+
+        // Partikelklasse
+        class Particle {
+            constructor(x, y, radius, color, velocity) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.velocity = velocity;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            update() {
+                this.draw();
+                this.x += this.velocity.x * particleSpeed;
+                this.y += this.velocity.y * particleSpeed;
+            }
+
+            split() {
+                for (let i = 0; i < Math.floor(Math.random() * (maxSplit - 1)) + 1; i++) {
+                    const newRadius = this.radius / 2; // Halbieren Sie den Radius für neue Partikel
+                    if (newRadius < 1) continue; // Mindestgröße für neue Partikel überprüfen
+                    const newVelocity = {
+                        x: (Math.random() - 0.5), // Zufällige Geschwindigkeit in x-Richtung
+                        y: (Math.random() - 0.5) // Zufällige Geschwindigkeit in y-Richtung
+                    };
+                    particles.push(new Particle(this.x, this.y, newRadius, this.color, newVelocity));
+                }
+            }
+
+            // Funktion zum Abprallen von Partikeln an den Ringen
+            checkRingCollision() {
+                if (this.x + this.radius > centerX - ringRadiusX && this.x - this.radius < centerX + ringRadiusX &&
+                    this.y + this.radius > centerY - ringRadiusY && this.y - this.radius < centerY + ringRadiusY) {
+                    // Partikel kollidiert mit den Ringen
+                    if (this.x + this.radius >= centerX - ringRadiusX || this.x - this.radius <= centerX + ringRadiusX) {
+                        // Kollision an den Seiten der Ringe
+                        this.velocity.x *= -1; // Richtung umkehren
+                    }
+                    if (this.y + this.radius >= centerY - ringRadiusY || this.y - this.radius <= centerY + ringRadiusY) {
+                        // Kollision an den Ober- oder Unterseiten der Ringe
+                        this.velocity.y *= -1; // Richtung umkehren
+                    }
+                }
+            }
+        }
+
+        // Funktion zum Erstellen einer zufälligen Farbe
+        function getRandomColor() {
+            var grey = Math.floor(Math.random() * 256);
+            return `rgb(${grey}, ${grey}, ${grey})`;
+        }
+
+        // Funktion zum Überprüfen von Kollisionen zwischen Partikeln
+        function checkParticleCollision(particleA, particleB) {
+            const dx = particleA.x - particleB.x;
+            const dy = particleA.y - particleB.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            return distance < particleA.radius + particleB.radius;
+        }
+
+        // Partikel initialisieren
+        function init() {
+            for (let i = 0; i < numParticles; i++) {
+                const radius = Math.random() * (particleSizeRange[1] - particleSizeRange[0]) + particleSizeRange[0]; // Zufälliger Radius innerhalb des Bereichs
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const color = getRandomColor();
+                const velocity = {
+                    x: (Math.random() - 0.5), // Zufällige Geschwindigkeit in x-Richtung
+                    y: (Math.random() - 0.5) // Zufällige Geschwindigkeit in y-Richtung
+                };
+                particles.push(new Particle(x, y, radius, color, velocity));
+            }
+        }
+
+        // Ringe initialisieren
+        function initRings() {
+            for (let i = 0; i < numRingParticles; i++) {
+                const angle = (Math.PI / 180) * (i * (360 / numRingParticles));
+                const x = centerX + Math.cos(angle) * ringRadiusX;
+                const y = centerY + Math.sin(angle) * ringRadiusY;
+                const radius = Math.random() * 2 + 0.5; // Zufälliger Radius im Bereich [0.5, 2.5]
+                const color = `rgba(255, 255, 255, ${0.3})`; // Transparentes Weiß für den Saturnring
+                ringParticles.push(new Particle(x, y, radius, color, { x: 0, y: 0 }));
+            }
+        }
+
+        // Ringe zeichnen
+        function drawRings() {
+            ringParticles.forEach(particle => {
+                particle.draw();
+            });
+        }
+
+        // Corona-Sphäre zeichnen
+        function drawCoronaSphere() {
+            particles.forEach((particle, index) => {
+                particle.update();
+                particle.checkRingCollision(); // Kollision mit den Ringen überprüfen
+                for (let i = index + 1; i < particles.length; i++) {
+                    if (checkParticleCollision(particle, particles[i])) {
+                        particle.split();
+                        particles.splice(i, 1); // Kollisionspartikel entfernen
+                        particles.splice(index, 1);
+                        break;
+                    }
+                }
+            });
+        }
+
+        // Hauptanimationsfunktion
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawRings();
+            drawCoronaSphere();
+        }
+
+        // Event-Listener für Tastendruck
+        window.addEventListener('keydown', function(event) {
+            switch(event.key) {
+                case 'ArrowUp':
+                    particleSpeed += 0.1; // Geschwindigkeit erhöhen
+                    break;
+                case 'ArrowDown':
+                    particleSpeed -= 0.1; // Geschwindigkeit verringern
+                    if (particleSpeed < 0) particleSpeed = 0; // Mindestgeschwindigkeit festlegen
+                    break;
+            }
+        });
+
+        // Event-Listener für Mausklicks
+        canvas.addEventListener('mousedown', function(event) {
+            isMouseDown = true;
+            fireParticles(event.clientX, event.clientY);
+        });
+
+        canvas.addEventListener('mouseup', function(event) {
+            isMouseDown = false;
+        });
+
+        canvas.addEventListener('mousemove', function(event) {
+            if (isMouseDown) {
+                fireParticles(event.clientX, event.clientY);
+            }
+        });
+
+        // Funktion zum Abschießen von Partikeln
+        function fireParticles(x, y) {
+            for (let i = 0; i < 5; i++) {
+                const radius = Math.random() * (particleSizeRange[1] - particleSizeRange[0]) + particleSizeRange[0]; // Zufälliger Radius innerhalb des Bereichs
+                const color = getRandomColor();
+                const velocity = {
+                    x: (Math.random() - 0.5), // Zufällige Geschwindigkeit in x-Richtung
+                    y: (Math.random() - 0.5) // Zufällige Geschwindigkeit in y-Richtung
+                };
+                particles.push(new Particle(x, y, radius, color, velocity));
+            }
+        }
+
+        init();
+        initRings();
+        animate();
+    </script>
+</body>
+</html>

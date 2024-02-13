@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; }
+        canvas { width: 100%; height: 100%; display: block; background: black; }
+    </style>
+</head>
+<body>
+<canvas id="btcCanvas"></canvas>
+<script>
+    var canvas = document.getElementById('btcCanvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+    var radius = 70; // Radius der Bitcoin-Münze
+    var angle = 0; // Startwinkel für die Rotation
+
+    function drawBTCMachine() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Canvas säubern
+
+        // Bitcoin-Münze zeichnen
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = 'gold';
+        ctx.fill();
+        ctx.font = '30px Arial';
+        ctx.fillStyle = 'black';
+        ctx.fillText('₿', centerX - 10, centerY + 10);
+
+        // Rotationsanimation
+        angle += 0.01;
+        ctx.translate(centerX, centerY);
+        ctx.rotate(angle);
+        ctx.translate(-centerX, -centerY);
+
+        requestAnimationFrame(drawBTCMachine);
+    }
+
+    drawBTCMachine();
+</script>
+</body>
+</html>

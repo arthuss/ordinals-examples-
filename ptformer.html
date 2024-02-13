@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas { display: block; margin: auto; background: #ddd; }
+    </style>
+</head>
+<body>
+<canvas id="platformGameCanvas"></canvas>
+<script>
+    var canvas = document.getElementById('platformGameCanvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = 800;
+    canvas.height = 400;
+
+    var player = {
+        x: 100,
+        y: canvas.height - 70,
+        width: 50,
+        height: 50,
+        speed: 5,
+        dx: 0,
+        dy: 0,
+        gravity: 0.8,
+        jumpPower: -15,
+        grounded: false
+    };
+
+    var platform = {
+        x: 0,
+        y: canvas.height - 20,
+        width: canvas.width,
+        height: 20
+    };
+
+    function drawPlayer() {
+        ctx.fillStyle = '#00B';
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function drawPlatform() {
+        ctx.fillStyle = '#444';
+        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    }
+
+    function clear() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function newPos() {
+        if (!player.grounded) {
+            player.dy += player.gravity;
+            player.y += player.dy;
+        } else {
+            player.dy = 0;
+        }
+
+        if (player.y + player.height > platform.y) {
+            player.y = platform.y - player.height;
+            player.grounded = true;
+        }
+
+        player.x += player.dx;
+
+        player.dx *= 0.9; // friction
+    }
+
+    function update() {
+        clear();
+
+        drawPlatform();
+        drawPlayer();
+
+        newPos();
+
+        requestAnimationFrame(update);
+    }
+
+    function jump() {
+        if (player.grounded) {
+            player.dy = player.jumpPower;
+            player.grounded = false;
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.code === 'Space') {
+            jump();
+        }
+    });
+
+    update();
+</script>
+</body>
+</html>

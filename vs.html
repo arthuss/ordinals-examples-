@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
+    <title>Weißer Zwerg mit Corona-Sphäre</title>
+</head>
+<body>
+    <canvas id="glcanvas"></canvas>
+    <script>
+        var canvas = document.getElementById('glcanvas');
+        var ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        var centerX = canvas.width / 2;
+        var centerY = canvas.height / 2;
+        var whiteDwarfRadius = 50; // Radius des Weißen Zwergs
+
+        var particles = []; // Array zur Speicherung der Partikel
+        var numParticles = 500; // Anzahl der Partikel
+
+        // Partikelklasse
+        class Particle {
+            constructor(x, y, radius, color, velocity) {
+                this.x = x;
+                this.y = y;
+                this.radius = radius;
+                this.color = color;
+                this.velocity = velocity;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            update() {
+                this.draw();
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+            }
+        }
+
+        // Funktion zum Erstellen einer zufälligen Farbe
+        function getRandomColor() {
+            var grey = Math.floor(Math.random() * 256);
+            return `rgb(${grey}, ${grey}, ${grey})`;
+        }
+
+        // Partikel initialisieren
+        function init() {
+            for (let i = 0; i < numParticles; i++) {
+                const radius = Math.random() * 2; // Zufälliger Radius zwischen 0 und 2
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const color = getRandomColor();
+                const velocity = {
+                    x: (Math.random() - 0.5) * 2, // Zufällige Geschwindigkeit in x-Richtung
+                    y: (Math.random() - 0.5) * 2 // Zufällige Geschwindigkeit in y-Richtung
+                };
+                particles.push(new Particle(x, y, radius, color, velocity));
+            }
+        }
+
+        // Corona-Sphäre zeichnen
+        function drawCoronaSphere() {
+            particles.forEach(particle => {
+                particle.update();
+            });
+        }
+
+        // Hauptanimationsfunktion
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawCoronaSphere();
+        }
+
+        init();
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        canvas { display: block; margin: auto; background: #000; }
+    </style>
+</head>
+<body>
+<canvas id="pongCanvas"></canvas>
+<script>
+    var canvas = document.getElementById('pongCanvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = 600;
+    canvas.height = 400;
+
+    var ball = {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        radius: 10,
+        deltaX: 3,
+        deltaY: 3
+    };
+
+    var paddleHeight = 60;
+    var paddleWidth = 10;
+    var leftPaddleY = canvas.height / 2 - paddleHeight / 2;
+    var rightPaddleY = canvas.height / 2 - paddleHeight / 2;
+
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+        ctx.fillStyle = "#FFF";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function drawPaddle(x, y) {
+        ctx.beginPath();
+        ctx.rect(x, y, paddleWidth, paddleHeight);
+        ctx.fillStyle = "#FFF";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        drawBall();
+        drawPaddle(0, leftPaddleY);
+        drawPaddle(canvas.width - paddleWidth, rightPaddleY);
+
+        // Ballbewegung
+        ball.x += ball.deltaX;
+        ball.y += ball.deltaY;
+
+        // Wandkollisionen
+        if (ball.y + ball.deltaY > canvas.height - ball.radius || ball.y + ball.deltaY < ball.radius) {
+            ball.deltaY = -ball.deltaY;
+        }
+        if (ball.x + ball.deltaX > canvas.width - ball.radius || ball.x + ball.deltaX < ball.radius) {
+            // Zurücksetzen des Balls zur Mitte, wenn ein Punkt erzielt wurde
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.deltaX = -ball.deltaX;
+        }
+
+        requestAnimationFrame(update);
+    }
+
+    update();
+</script>
+</body>
+</html>

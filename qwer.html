@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
+    <title>Generatives Schwarzes Loch</title>
+</head>
+<body>
+    <canvas id="glcanvas"></canvas>
+    <script>
+        var canvas = document.getElementById('glcanvas');
+        var ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        var centerX = canvas.width / 2;
+        var centerY = canvas.height / 2;
+        var particles = []; // Array zur Speicherung der Partikel
+        var particleCount = 1000; // Anzahl der Partikel
+        var blackHoleSize = 100; // Größe des schwarzen Lochs
+
+        // Funktion zum Erstellen eines zufälligen Partikels
+        function createParticle() {
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: 0,
+                vy: 0
+            };
+        }
+
+        // Partikel erstellen
+        for (var i = 0; i < particleCount; i++) {
+            particles.push(createParticle());
+        }
+
+        // Funktion zum Zeichnen eines schwarzen Lochs
+        function drawBlackHole() {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, blackHoleSize, 0, 2 * Math.PI);
+            ctx.fillStyle = 'black';
+            ctx.fill();
+        }
+
+        // Funktion zum Bewegen der Partikel in Richtung des schwarzen Lochs
+        function moveParticles() {
+            particles.forEach(function(particle) {
+                // Vektor zum schwarzen Loch berechnen
+                var dx = centerX - particle.x;
+                var dy = centerY - particle.y;
+                var distance = Math.sqrt(dx * dx + dy * dy);
+
+                // Geschwindigkeit proportional zur Entfernung vom schwarzen Loch setzen
+                particle.vx = (dx / distance) * 2;
+                particle.vy = (dy / distance) * 2;
+
+                // Partikel bewegen
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+
+                // Überprüfen, ob der Partikel das schwarze Loch erreicht hat, und ihn zurücksetzen
+                if (distance < blackHoleSize) {
+                    particle.x = Math.random() * canvas.width;
+                    particle.y = Math.random() * canvas.height;
+                }
+            });
+        }
+
+        // Funktion zum Zeichnen der Partikel
+        function drawParticles() {
+            particles.forEach(function(particle) {
+                ctx.beginPath();
+                ctx.arc(particle.x, particle.y, 1, 0, 2 * Math.PI);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+            });
+        }
+
+        // Hauptanimationsfunktion
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawBlackHole();
+            moveParticles();
+            drawParticles();
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

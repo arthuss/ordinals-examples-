@@ -1,0 +1,98 @@
+<html>
+<head>
+    <style>
+        body { margin: 0; }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
+</head>
+<body>
+<canvas id="glcanvas"></canvas>
+<script type="text/javascript">
+    var canvas = document.getElementById('glcanvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+    var radius = 50; // Konstanter Radius für alle Kreise
+
+    var circles = []; // Speichert alle Kreise und ihren Status
+
+    function drawCircle(circle) {
+        ctx.globalAlpha = circle.alpha;
+        ctx.strokeStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, radius, 0, 2 * Math.PI);
+        ctx.stroke();
+    }
+
+    function addCircleIfNotExists(x, y) {
+        // Überprüfe, ob der Kreis bereits existiert
+        var exists = circles.some(circle => Math.abs(circle.x - x) < 1 && Math.abs(circle.y - y) < 1);
+        if (!exists) {
+            var circle = { x: x, y: y, alpha: 0, fading: 'in' };
+            circles.push(circle);
+            fadeInCircle(circle);
+        }
+    }
+
+    function fadeInCircle(circle) {
+        function animate() {
+            if (circle.alpha < 1 && circle.fading === 'in') {
+                circle.alpha += 0.05;
+                requestAnimationFrame(animate);
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    function fadeOutCircle(circle) {
+        function animate() {
+            if (circle.alpha > 0 && circle.fading === 'out') {
+                circle.alpha -= 0.02;
+                requestAnimationFrame(animate);
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    function handleMouseMove(event) {
+        var rect = canvas.getBoundingClientRect();
+        var mouseX = event.clientX - rect.left;
+        var mouseY = event.clientY - rect.top;
+
+        circles.forEach(circle => {
+            var distance = Math.sqrt((circle.x - mouseX) ** 2 + (circle.y - mouseY) ** 2);
+            if (distance < radius * 2 && circle.fading !== 'in') {
+                circle.fading = 'in';
+                fadeInCircle(circle);
+            } else if (distance >= radius * 2 && circle.fading !== 'out') {
+                circle.fading = 'out';
+                fadeOutCircle(circle);
+            }
+        });
+    }
+
+    canvas.addEventListener('mousemove', handleMouseMove);
+
+    // Zeichne den initialen Satz von Kreisen
+    for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i; // 60 Grad
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        addCircleIfNotExists(x, y);
+    }
+    addCircleIfNotExists(centerX, centerY); // Zentraler Kreis
+
+    function render() {
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        circles.forEach(drawCircle);
+        requestAnimationFrame(render);
+    }
+    render();
+</script>
+</body>
+</html>

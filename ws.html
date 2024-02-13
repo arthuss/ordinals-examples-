@@ -1,0 +1,83 @@
+<html>
+<head>
+    <style>
+        body { margin: 0; }
+        canvas { width: 100%; height: 100%; display: block; }
+    </style>
+</head>
+<body>
+<canvas id="glcanvas"></canvas>
+<script type="text/javascript">
+    var canvas = document.getElementById('glcanvas');
+    var ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+    var radius = 50; // Konstanter Radius für alle Kreise
+
+    var circles = []; // Speichert alle Kreise und ihren Status
+
+    // Funktion zum Zeichnen eines Kreises mit spezifischer Transparenz
+    function drawCircle(circle) {
+        ctx.globalAlpha = circle.alpha;
+        ctx.strokeStyle = 'white'; // Kreisfarbe auf Weiß setzen
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, radius, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.globalAlpha = 1; // Setze die Transparenz zurück
+    }
+
+    // Funktion zum Hinzufügen von Kreisen im Muster der "Blume des Lebens"
+    function addCircles(centerX, centerY, radius, generations) {
+        var numCircles = 6;
+        var angle = Math.PI / 3; // 60 Grad für hexagonale Anordnung
+
+        for (var g = 0; g < generations; g++) {
+            for (var i = 0; i < numCircles; i++) {
+                var x = centerX + radius * Math.cos(i * angle + g * Math.PI / 6);
+                var y = centerY + radius * Math.sin(i * angle + g * Math.PI / 6);
+
+                // Überspringe, wenn der Kreis bereits hinzugefügt wurde
+                if (!circles.some(circle => circle.x === x && circle.y === y)) {
+                    circles.push({ x: x, y: y, alpha: 0 }); // Starte mit Transparenz 0
+                }
+
+                // Füge Kreise für die nächste Generation hinzu
+                if (g < generations - 1) {
+                    addCircles(x, y, radius / 2, 1);
+                }
+            }
+        }
+    }
+
+    // Funktion zum Aktualisieren der Transparenz basierend auf der Mausposition
+    function updateCircles(mouseX, mouseY) {
+        circles.forEach(circle => {
+            var distance = Math.sqrt(Math.pow(circle.x - mouseX, 2) + Math.pow(circle.y - mouseY, 2));
+            if (distance < radius) {
+                if (circle.alpha < 1) circle.alpha += 0.1; // Einblenden
+            } else {
+                if (circle.alpha > 0) circle.alpha -= 1; // Ausblenden
+            }
+            drawCircle(circle);
+        });
+    }
+
+    // Erstelle das Grundmuster der "Blume des Lebens"
+    addCircles(centerX, centerY, radius, 3); // 3 Generationen von Kreisen
+
+    // Maus-Bewegungs-Event zum Aktualisieren der Kreise
+    canvas.addEventListener('mousemove', function(event) {
+        var rect = canvas.getBoundingClientRect();
+        var mouseX = event.clientX - rect.left;
+        var mouseY = event.clientY - rect.top;
+        ctx.fillStyle = 'black'; // Hintergrundfarbe auf Schwarz setzen
+        ctx.fillRect(0, 0, canvas.width, canvas.height); // Lösche das Canvas mit schwarzem Hintergrund
+        updateCircles(mouseX, mouseY);
+    });
+</script>
+</body>
+</html>
